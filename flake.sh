@@ -41,6 +41,8 @@ failures=()
 echo "jest test script: $jest_script"
 echo "number of iterations: $iterations"
 
+# Run test suite and collect failures
+
 for ((i = 1; i <= $iterations; i++)); do
   echo "Running Jest test suite, iteration $i ..."
 
@@ -64,13 +66,34 @@ for ((i = 1; i <= $iterations; i++)); do
   fi
 done
 
+# Create frequency table
+
 declare -A freq
 
 for str in "${failures[@]}"; do
   ((freq["$str"]++))
 done
 
-echo -e "String\tFrequency"
+# Print out the frequency table
+
+max_len=0
 for str in "${!freq[@]}"; do
-  echo -e "$str\t${freq[$str]}"
+  len=${#str}
+  if ((len > max_len)); then
+    max_len=$len
+  fi
 done
+
+echo "$(tput bold)$(tput setaf 3)
+               ___ _       ___             _
+ ___ _____ ___|  _|_|___ _|  _|___ ___ ___|_|___ ___
+|   |     | -_|  _| |   | |  _|  _|  _|  _| |   | -_|
+|_|_|_|_|_|___|_| |_|_|_|_|_| |_| |_| |_| |_|_|_|___|
+$(tput sgr0)"
+
+printf "| $(tput bold)$(tput setaf 6)%-${max_len}s $(tput sgr0)| $(tput bold)$(tput setaf 6)%-10s $(tput sgr0)|\n" "String" "Frequency"
+echo "$(tput bold)$(tput setaf 6)+$(printf '%*s' "$((max_len + 2))" "" | tr ' ' '-')+$(printf '%*s' 12 "" | tr ' ' '-')+$(tput sgr0)"
+for str in "${!freq[@]}"; do
+  printf "| $(tput setaf 2)%-${max_len}s $(tput sgr0)| $(tput setaf 5)%10d $(tput sgr0)|\n" "$str" "${freq[$str]}"
+done
+echo "$(tput bold)$(tput setaf 6)+$(printf '%*s' "$((max_len + 2))" "" | tr ' ' '-')+$(printf '%*s' 12 "" | tr ' ' '-')+$(tput sgr0)"
