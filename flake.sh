@@ -1,19 +1,55 @@
 #!/bin/bash
 
+# Default values
+jest_script="npm run test -- --json"
+iterations=100
+save_outputs=false
+
+# Parse options
+while getopts ":s:i:jh" opt; do
+    case $opt in
+    h)
+        echo "Usage: $0 [-s jest_script] [-i iterations] [-j] [-h]"
+        echo "  -s: Specify the jest test script (default: npm run test -- --json)"
+        echo "  -i: Specify the number of test iterations (default: 100)"
+        echo "  -j: Save jest --json outputs (default: false)"
+        echo "  -h: Display this help message"
+        exit 0
+        ;;
+    s)
+        jest_script="$OPTARG"
+        ;;
+    i)
+        iterations="$OPTARG"
+        ;;
+    j)
+        save_outputs=true
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        exit 1
+        ;;
+    :)
+        echo "Option -$OPTARG requires an argument." >&2
+        exit 1
+        ;;
+    esac
+done
+
 failures=()
 
-echo "jest test script: $1"
-echo "number of iterations: $2"
+echo "jest test script: $jest_script"
+echo "number of iterations: $iterations"
 
-for ((i = 1; i <= $2; i++)); do
+for ((i = 1; i <= $iterations; i++)); do
     echo "Running Jest test suite, iteration $i ..."
 
-    output_file="test_results_$i.json"
+    jest_output=$($jest_script | tail -n +5)
 
-    jest_output=$($1 | tail -n +5)
-
-    # TODO Expose this functionality in the api
-    echo "$jest_output" >$output_file
+    if [ "$is_true" = true ]; then
+        output_file="test_results_$i.json"
+        echo "$jest_output" >$output_file
+    fi
 
     if echo "$jest_output" | jq -e '.testResults[].assertionResults[] | select(.status=="failed")' >/dev/null; then
 
