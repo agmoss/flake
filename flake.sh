@@ -2,10 +2,18 @@
 
 failures=()
 
-for i in {1..100}; do
+echo "jest test script: $1"
+echo "number of iterations: $2"
+
+for ((i = 1; i <= $2; i++)); do
     echo "Running Jest test suite, iteration $i ..."
 
-    jest_output=$(npm run test | tail -n +5)
+    output_file="test_results_$i.json"
+
+    jest_output=$($1 | tail -n +5)
+
+    # TODO Expose this functionality in the api
+    echo "$jest_output" >$output_file
 
     if echo "$jest_output" | jq -e '.testResults[].assertionResults[] | select(.status=="failed")' >/dev/null; then
 
@@ -13,8 +21,8 @@ for i in {1..100}; do
 
         readarray -t failing_tests_collection <<<"$failing_tests"
 
-        for i in "${failing_tests_collection[@]}"; do
-            failures+=("$i")
+        for failure in "${failing_tests_collection[@]}"; do
+            failures+=("$failure")
         done
 
     fi
