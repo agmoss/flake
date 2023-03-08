@@ -22,11 +22,5 @@ This is a Bash CLI script fir identifying "flaky" jest tests
 If this script hangs or fails, it can be useful to run an analysis on the persisted `--json` output files generated from this CLI
 
 ```bash
-output_file="failing_tests.txt"
-
->"$output_file"
-
-for file in *.json; d
-  jq -r '.testResults[].assertionResults[] | select(.status == "failed") | .fullName' "$file" >>"$output_file"
-done
+./flake_on_files.sh
 ```
