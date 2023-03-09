@@ -1,18 +1,22 @@
 #!/bin/bash
 
+source ./print_frequency_table.sh
+
 # Default values
 jest_script="npm run test -- --json"
 iterations=100
 save_outputs=false
+directory="."
 
 # Parse options
-while getopts ":s:i:jh" opt; do
+while getopts ":s:i:d:jh" opt; do
   case $opt in
   h)
     echo "Usage: $0 [-s jest_script] [-i iterations] [-j] [-h]"
     echo "  -s: Specify the jest test script (default: npm run test -- --json)"
     echo "  -i: Specify the number of test iterations (default: 100)"
     echo "  -j: Save jest --json outputs (default: false)"
+    echo "  -d: Specify the directory to run the test script (default: current directory)"
     echo "  -h: Display this help message"
     exit 0
     ;;
@@ -24,6 +28,9 @@ while getopts ":s:i:jh" opt; do
     ;;
   j)
     save_outputs=true
+    ;;
+  d)
+    directory="$OPTARG"
     ;;
   \?)
     echo "Invalid option: -$OPTARG" >&2
@@ -40,8 +47,11 @@ failures=()
 
 echo "jest test script: $jest_script"
 echo "number of iterations: $iterations"
+echo "running test command in: $directory"
 
 # Run test suite and collect failures
+
+cd $directory
 
 for ((i = 1; i <= $iterations; i++)); do
   echo "Running Jest test suite, iteration $i ..."
@@ -66,34 +76,4 @@ for ((i = 1; i <= $iterations; i++)); do
   fi
 done
 
-# Create frequency table
-
-declare -A freq
-
-for str in "${failures[@]}"; do
-  ((freq["$str"]++))
-done
-
-# Print out the frequency table
-
-max_len=0
-for str in "${!freq[@]}"; do
-  len=${#str}
-  if ((len > max_len)); then
-    max_len=$len
-  fi
-done
-
-echo "$(tput bold)$(tput setaf 3)
-               ___ _       ___             _
- ___ _____ ___|  _|_|___ _|  _|___ ___ ___|_|___ ___
-|   |     | -_|  _| |   | |  _|  _|  _|  _| |   | -_|
-|_|_|_|_|_|___|_| |_|_|_|_|_| |_| |_| |_| |_|_|_|___|
-$(tput sgr0)"
-
-printf "| $(tput bold)$(tput setaf 6)%-${max_len}s $(tput sgr0)| $(tput bold)$(tput setaf 6)%-10s $(tput sgr0)|\n" "String" "Frequency"
-echo "$(tput bold)$(tput setaf 6)+$(printf '%*s' "$((max_len + 2))" "" | tr ' ' '-')+$(printf '%*s' 12 "" | tr ' ' '-')+$(tput sgr0)"
-for str in "${!freq[@]}"; do
-  printf "| $(tput setaf 2)%-${max_len}s $(tput sgr0)| $(tput setaf 5)%10d $(tput sgr0)|\n" "$str" "${freq[$str]}"
-done
-echo "$(tput bold)$(tput setaf 6)+$(printf '%*s' "$((max_len + 2))" "" | tr ' ' '-')+$(printf '%*s' 12 "" | tr ' ' '-')+$(tput sgr0)"
+print_frequency_table "${failures[@]}"
