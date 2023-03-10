@@ -10,6 +10,8 @@ This is a Bash CLI script fir identifying "flaky" jest tests
 ./flake.sh [-s jest_script] [-i iterations] [-j] [-h]
 ```
 
+**note** In a CI environment, it is convenient to run `flake_ci.sh` as this file has no dependencies
+
 ## Options
 
 - `-s jest_script`: Specify the jest test script (default: npm run test -- --json)
