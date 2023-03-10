@@ -53,7 +53,6 @@ echo "saving jest --json files: $save_outputs"
 cd $directory
 
 for ((i = 1; i <= $iterations; i++)); do
-  echo "Running Jest test suite, iteration $i ..."
 
   jest_output=$($jest_script | tail -n +5)
 
@@ -81,8 +80,9 @@ for str in "${failures[@]}"; do
   ((freq["$str"]++))
 done
 
-# Print out the frequency table (simple)
-echo -e "String\tFrequency"
+# Print frequency table (simple)
+
+echo -e "Test\tFrequency"
 for str in "${!freq[@]}"; do
   echo -e "$str\t${freq[$str]}"
 done
